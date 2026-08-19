@@ -1,0 +1,26 @@
+[
+    {
+        "mission_id": "M-1001",
+        "vehicle_id": "V-001",
+        "driver": "Johnson",
+        "destination": "Warehouse A",
+        "priority": "high",
+        "status": "in_progress"
+    },
+    {
+        "mission_id": "M-1002",
+        "vehicle_id": "V-004",
+        "driver": "Williams",
+        "destination": "Warehouse B",
+        "priority": "medium",
+        "status": "in_progress"
+    },
+    {
+        "mission_id": "M-1003",
+        "vehicle_id": "V-002",
+        "driver": "Smith",
+        "destination": "Distribution Center",
+        "priority": "low",
+        "status": "scheduled"
+    }
+]

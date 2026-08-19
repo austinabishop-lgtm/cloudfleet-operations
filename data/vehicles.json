@@ -1,0 +1,37 @@
+[
+    {
+        "vehicle_id": "V-001",
+        "type": "Cargo Van",
+        "status": "dispatched",
+        "location": "Warehouse A",
+        "maintenance_required": false
+    },
+    {
+        "vehicle_id": "V-002",
+        "type": "Passenger Van",
+        "status": "available",
+        "location": "Main Yard",
+        "maintenance_required": false
+    },
+    {
+        "vehicle_id": "V-003",
+        "type": "Box Truck",
+        "status": "maintenance",
+        "location": "Maintenance Facility",
+        "maintenance_required": true
+    },
+    {
+        "vehicle_id": "V-004",
+        "type": "Cargo Van",
+        "status": "dispatched",
+        "location": "Warehouse B",
+        "maintenance_required": false
+    },
+    {
+        "vehicle_id": "V-005",
+        "type": "Passenger Van",
+        "status": "available",
+        "location": "Main Yard",
+        "maintenance_required": false
+    }
+]
