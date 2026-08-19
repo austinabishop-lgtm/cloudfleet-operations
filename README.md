@@ -462,7 +462,65 @@ The larger engineering challenge involved making the application:
 CloudFleet demonstrates how application development, infrastructure, automation, networking, security, and operations work together in a cloud engineering environment.
 
 ---
+---
 
+## Project Evidence
+
+The following screenshots document key milestones from the CloudFleet Operations Platform build and deployment.
+
+### Data Standardization
+
+Validated standardized JavaScript Object Notation (JSON) vehicle and mission datasets before application use.
+
+![CloudFleet Data Validation](docs/screenshots/data-validation.png)
+
+### Local CloudFleet Dashboard
+
+Developed a Python Flask dashboard that processes fleet and mission information, calculates readiness metrics, and identifies operational alerts.
+
+![CloudFleet Local Dashboard](docs/screenshots/cloudfleet-dashboard-local.png)
+
+### Docker Containerization
+
+Built and launched CloudFleet as a Docker container and verified application availability with an HTTP `200 OK` response.
+
+![Docker HTTP Verification](docs/screenshots/docker-http-verification.png)
+
+### Terraform Infrastructure Plan
+
+Reviewed the Terraform execution plan before deployment to verify the expected AWS resources would be created.
+
+![Terraform Plan](docs/screenshots/terraform-plan.png)
+
+### Ansible Connectivity
+
+Verified successful remote configuration management access to the Amazon EC2 instance using Ansible.
+
+![Ansible Connectivity](docs/screenshots/ansible-connectivity.png)
+
+### SSH Troubleshooting Resolution
+
+Resolved intermittent Secure Shell (SSH) connectivity problems after systematic troubleshooting across AWS networking, EC2 health, Windows Subsystem for Linux (WSL), and SSH client configuration.
+
+![SSH Troubleshooting Resolution](docs/screenshots/ssh-troubleshooting-resolution.png)
+
+### CloudFleet Running on AWS
+
+Successfully deployed the CloudFleet dashboard to an Amazon EC2 instance and accessed the application through the server's public endpoint.
+
+![CloudFleet AWS Deployment](docs/screenshots/cloudfleet-dashboard-aws.png)
+
+### Amazon CloudWatch Monitoring
+
+Created a proactive Amazon CloudWatch alarm named `CloudFleet-High-CPU` to monitor EC2 processor utilization.
+
+![CloudWatch Alarm](docs/screenshots/cloudwatch-alarm.png)
+
+### Final Health Verification
+
+Verified the deployed application returned `HTTP/1.1 200 OK` and confirmed the CloudWatch alarm remained in the healthy `OK` state.
+
+![Final Health Verification](docs/screenshots/final-health-verification.png)
 ## Cleanup
 
 AWS resources should be destroyed when the project environment is no longer needed to prevent unnecessary cloud charges.
