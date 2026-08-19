@@ -489,3 +489,49 @@ Rather than immediately recreating the EC2 instance, I validated EC2 health chec
 EC2 Instance Connect confirmed that the server itself remained healthy. Further SSH testing showed that disabling IPQoS restored reliable connectivity. I then incorporated the working SSH option into Ansible and successfully restored automated configuration management.
 
 The experience demonstrated systematic cloud troubleshooting across application, operating system, networking, automation, and AWS infrastructure layers.
+---
+
+## Issue 12: AWS CLI CloudWatch Command Failed
+
+### Problem
+
+While creating the CloudFleet CPU alarm with the AWS Command Line Interface (AWS CLI), the command failed with:
+
+`badly formed help string`
+
+The CloudWatch alarm was not created.
+
+### Investigation
+
+I verified the AWS CLI versions in both Windows Subsystem for Linux (WSL) and Windows PowerShell.
+
+Both environments reported Python 3.14.4.
+
+The CloudWatch command syntax was reviewed, and the failure appeared to occur locally in the AWS CLI rather than being returned by the CloudWatch service.
+
+### Resolution
+
+Instead of modifying the CloudWatch configuration or risking unnecessary infrastructure changes, I used the AWS Management Console to create the alarm.
+
+The alarm was configured with:
+
+- Metric: CPUUtilization
+- Resource: CloudFleet EC2 instance
+- Statistic: Average
+- Period: 5 minutes
+- Threshold: Greater than 70%
+- Alarm name: CloudFleet-High-CPU
+
+CloudWatch initially reported `Insufficient data` while collecting enough metric information.
+
+The alarm subsequently transitioned to:
+
+`OK`
+
+This confirmed that CloudWatch was successfully monitoring the EC2 instance and that CPU utilization remained below the configured threshold.
+
+### Lesson Learned
+
+When a cloud-management command fails, determine whether the error originates from the local tooling or from the cloud service itself before changing infrastructure.
+
+Alternative management interfaces, such as the AWS Management Console, can provide a safe way to continue while a local tooling problem is investigated.
