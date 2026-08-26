@@ -218,6 +218,6 @@ CloudFleet successfully demonstrated:
 
 ## Portfolio Status
 
-The application and operational tooling have been successfully deployed and verified. The temporary AWS environment remains active only while final portfolio evidence is collected.
+The application and operational tooling were successfully deployed and verified. After final portfolio evidence was collected, the temporary AWS environment was destroyed.
 
-After documentation is complete, Terraform will destroy the managed resources to prevent unnecessary cloud charges. Cleanup will be verified by confirming that the Terraform state contains no remaining resources.
+Terraform destroyed all eight managed resources to prevent unnecessary cloud charges. Cleanup was verified by confirming that Terraform state and the targeted AWS service queries returned no remaining CloudFleet resources.

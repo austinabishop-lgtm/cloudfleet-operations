@@ -435,7 +435,7 @@ CloudFleet demonstrates that deploying an application is only one part of cloud 
 
 CloudFleet has been successfully deployed and verified on AWS. The application, health check, CloudWatch dashboard, alarms, and SNS email-notification path have all been tested.
 
-The environment is temporary and will be destroyed with Terraform after final portfolio evidence is captured to prevent unnecessary AWS charges.
+After final portfolio evidence was captured, Terraform destroyed all eight managed AWS resources to prevent unnecessary cloud charges.
 
 ## Cleanup
 
