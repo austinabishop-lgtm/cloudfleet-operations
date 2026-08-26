@@ -1,6 +1,8 @@
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   alarm_name          = "cloudfleet-high-cpu"
   alarm_description   = "CloudFleet EC2 average CPU utilization is at least 70 percent"
+  alarm_actions       = [aws_sns_topic.cloudfleet_alerts.arn]
+  ok_actions          = [aws_sns_topic.cloudfleet_alerts.arn]
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
   datapoints_to_alarm = 2
@@ -24,6 +26,8 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
 resource "aws_cloudwatch_metric_alarm" "status_check_failed" {
   alarm_name          = "cloudfleet-status-check-failed"
   alarm_description   = "CloudFleet EC2 instance or system status check has failed"
+  alarm_actions       = [aws_sns_topic.cloudfleet_alerts.arn]
+  ok_actions          = [aws_sns_topic.cloudfleet_alerts.arn]
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
   datapoints_to_alarm = 2
@@ -43,6 +47,7 @@ resource "aws_cloudwatch_metric_alarm" "status_check_failed" {
     Project = "CloudFleet"
   }
 }
+
 resource "aws_cloudwatch_dashboard" "cloudfleet" {
   dashboard_name = "CloudFleet-Operations"
 
