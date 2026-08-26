@@ -114,7 +114,7 @@
 
     - name: Verify CloudFleet health
       ansible.builtin.uri:
-        url: http://127.0.0.1:5000
+        url: http://127.0.0.1:5000/health
         status_code: 200
       register: cloudfleet_health
       retries: 5

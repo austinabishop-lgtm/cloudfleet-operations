@@ -4,6 +4,15 @@ from pathlib import Path
 
 app = Flask(__name__)
 
+
+@app.route("/health")
+def health():
+    return {
+        "status": "healthy",
+        "service": "cloudfleet",
+    }, 200
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 VEHICLES_FILE = BASE_DIR / "data" / "vehicles.json"
 MISSIONS_FILE = BASE_DIR / "data" / "missions.json"
