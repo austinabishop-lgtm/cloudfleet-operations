@@ -1,139 +1,223 @@
-# CloudFleet Operations Platform — Project Summary
+k# CloudFleet Operations Platform — Project Summary
 
-## Project Overview
+## Overview
 
-CloudFleet Operations Platform is a cloud engineering and DevOps project designed around real-world transportation and fleet operations.
+CloudFleet Operations Platform is an end-to-end cloud engineering and DevOps project inspired by real-world transportation, dispatch, vehicle accountability, and mission-readiness operations.
 
-The project demonstrates how cloud technologies can address challenges involving data consistency, infrastructure deployment, configuration management, monitoring, security, troubleshooting, and operational readiness.
+The project converts standardized fleet and mission data into a containerized web dashboard deployed to Amazon Web Services (AWS). Terraform provisions the infrastructure, Ansible configures and deploys the server, Amazon CloudWatch monitors the environment, and Amazon Simple Notification Service (Amazon SNS) delivers email alerts.
 
-## Problem 1: Data Source Variability
+## Business Problem
 
-Fleet and mission information can come from different systems using inconsistent formats.
+Transportation organizations may receive vehicle, dispatch, maintenance, and mission information from multiple systems. Inconsistent field names, formats, and status values can reduce data quality and make automation unreliable.
 
-### Solution
+Operations teams also need more than a working application. They need repeatable deployment, health verification, monitoring, alerting, secure administration, and documented recovery procedures.
 
-I standardized vehicle and mission information using JavaScript Object Notation (JSON).
+## Solution
 
-Standardized data made the information easier for the application to process consistently and reduced the risk of errors caused by different data structures.
+CloudFleet provides this complete workflow:
 
-The Flask application used this standardized data to display fleet information and operational readiness through the CloudFleet dashboard.
+Standardized fleet data → Python and Flask dashboard → Docker and Gunicorn → Ansible deployment → Amazon EC2 → CloudWatch monitoring → Amazon SNS email alerts
 
-## Problem 2: Proactive Monitoring and Observability
+## Data Standardization
 
-Waiting for users to report a system problem creates a reactive support model.
+Vehicle and mission records use standardized JavaScript Object Notation (JSON) structures.
 
-### Solution
+Vehicle data includes:
 
-I implemented Amazon CloudWatch monitoring for the CloudFleet Amazon Elastic Compute Cloud (Amazon EC2) instance.
+* Vehicle identifier
+* Vehicle type
+* Operational status
+* Current location
+* Maintenance requirement
 
-A CloudWatch alarm named `CloudFleet-High-CPU` monitored average CPU utilization.
+Mission data includes:
 
-The alarm was configured with:
+* Mission identifier
+* Assigned vehicle
+* Driver
+* Destination
+* Priority
+* Mission status
 
-- Metric: CPUUtilization
-- Statistic: Average
-- Period: 5 minutes
-- Threshold: Greater than 70%
+Approved values improve application reliability, validation, troubleshooting, and future system integration.
 
-After CloudWatch collected sufficient data, the alarm entered the `OK` state.
+## Application Development
 
-This demonstrated proactive monitoring of infrastructure health.
+The Python Flask application reads the standardized fleet datasets and calculates:
+
+* Total vehicles
+* Available vehicles
+* Dispatched vehicles
+* Vehicles in maintenance
+* Fleet availability
+* Operational alerts
+
+The dashboard displays mission assignments, vehicle status, locations, priorities, and maintenance requirements.
+
+A dedicated `/health` route returns a machine-readable response showing that the CloudFleet service is healthy.
+
+## Containerization and Runtime Hardening
+
+The application is packaged as a Docker image.
+
+The original Flask development server was replaced with Gunicorn, a production-oriented Web Server Gateway Interface (WSGI) server. Debug mode was disabled, dependency versions were pinned, and the container was configured to restart unless intentionally stopped.
+
+The deployed application was verified through Gunicorn with an HTTP `200 OK` response.
 
 ## Infrastructure Automation
 
-I used Terraform Infrastructure as Code (IaC) to provision the AWS infrastructure required for CloudFleet.
+Terraform Infrastructure as Code (IaC) manages:
 
-Terraform managed resources including:
+* Amazon Elastic Compute Cloud (Amazon EC2) instance
+* Security group
+* SSH key-pair registration
+* CloudWatch alarms
+* CloudWatch operations dashboard
+* SNS topic
+* Email subscription
 
-- Amazon EC2 instance
-- Security group
-- SSH key pair
+Terraform validation succeeded, and the final plan reported:
 
-Using Terraform made the infrastructure repeatable and allowed the environment to be safely destroyed after testing.
+`No changes. Your infrastructure matches the configuration.`
+
+This confirmed that the deployed infrastructure matched the declared configuration.
 
 ## Configuration Management
 
-I used Ansible to remotely configure the EC2 server.
+Ansible automates:
 
-Ansible automated tasks including:
+* Ubuntu package-cache updates
+* Docker installation
+* Docker service management
+* User group configuration
+* Application-directory creation
+* Source and data transfer
+* Conditional Docker image builds
+* Container replacement and startup
+* Application health verification
 
-- Connecting to the EC2 instance
-- Updating Ubuntu packages
-- Installing Docker
-- Starting and enabling Docker
-- Preparing the server for CloudFleet
+A repeated Ansible run completed with `changed=0`, `unreachable=0`, and `failed=0`, demonstrating idempotent configuration management.
 
-Successful Ansible connectivity was verified using the ping module.
+## Monitoring and Observability
 
-## Containerization
+The `CloudFleet-Operations` CloudWatch dashboard displays:
 
-I packaged the CloudFleet Python Flask application into a Docker image.
+* Average processor utilization
+* EC2 status-check failures
+* Incoming network traffic
+* Outgoing network traffic
 
-The application was deployed as a Docker container on the EC2 instance and exposed through TCP port 5000.
+CloudFleet includes two automated alarms:
 
-Application availability was verified with an HTTP request that returned:
+1. `cloudfleet-high-cpu` monitors sustained processor utilization at or above 70 percent.
+2. `cloudfleet-status-check-failed` monitors EC2 instance or AWS system-check failures.
 
-`HTTP/1.1 200 OK`
+Both alarms reached the healthy `OK` state after CloudWatch collected sufficient data.
+
+## Email Notifications
+
+The CloudWatch alarms publish both incident and recovery events to the `cloudfleet-alerts` SNS topic.
+
+A confirmed email subscription receives those notifications. End-to-end delivery was verified using a controlled SNS test message without generating a real infrastructure incident.
+
+The notification email is provided through an ignored Terraform variable file and is not stored in the public repository.
 
 ## Security
 
-The project included several security practices.
+Security measures include:
 
-SSH access was restricted from `0.0.0.0/0` to a specific administrator public IPv4 address using a `/32` Classless Inter-Domain Routing (CIDR) block.
+* ED25519 Secure Shell (SSH) key authentication
+* SSH restricted to one administrator IPv4 `/32` Classless Inter-Domain Routing (CIDR) address
+* Terraform state excluded from Git
+* Sensitive `.tfvars` files excluded from Git
+* Local private keys excluded from Git
+* Flask debug mode disabled
+* Gunicorn used for the deployed runtime
+* Infrastructure changes reviewed before application
 
-SSH key authentication was used instead of password authentication.
+The current portfolio deployment uses HTTP on port `5000`. A production enhancement would add an Application Load Balancer, Transport Layer Security (TLS), a managed certificate, and a domain name.
 
-Terraform state files and sensitive local infrastructure files were excluded from Git version control.
+## Verification
+
+The environment was verified through:
+
+* Terraform formatting, validation, planning, and drift detection
+* Ansible syntax checks
+* Ansible deployment and idempotency testing
+* Remote Docker service and container checks
+* Public dashboard HTTP checks
+* Dedicated `/health` endpoint checks
+* CloudWatch alarm-state checks
+* CloudWatch dashboard visualization
+* Controlled SNS email-delivery testing
+* Git staged-diff and sensitive-data checks
 
 ## Troubleshooting
 
-Twelve troubleshooting scenarios were documented during the project.
+The project generated practical troubleshooting experience across several layers:
 
-Examples included:
+* Docker permissions
+* Terraform state and working directories
+* AWS networking
+* Dynamic public addresses
+* Virtual Private Network (VPN) changes
+* Cellular tethering
+* Security-group rules
+* SSH transport behavior
+* Ansible check mode
+* Flask runtime security
+* Python environments
+* AWS Command Line Interface (AWS CLI) compatibility
+* Terminal pager behavior
+* SNS testing
 
-- Docker permission problems
-- Terraform output issues
-- AWS route-table investigation
-- SSH connection timeouts
-- EC2 Instance Connect diagnostics
-- Windows versus Windows Subsystem for Linux networking
-- SSH IPQoS troubleshooting
-- Security group hardening
-- Ansible connectivity recovery
-- Editing files from the wrong host
-- Accidental combined terminal commands
-- AWS Command Line Interface CloudWatch command troubleshooting
+Each incident follows this structure:
 
-Each incident was documented using:
-
-Problem → Investigation → Resolution → Lesson Learned
+Problem → Evidence → Root Cause → Resolution → Verification → Lesson
 
 ## Results
 
-CloudFleet successfully demonstrated an end-to-end cloud engineering workflow:
+CloudFleet successfully demonstrated:
 
-Standardized Data → Flask → Docker → Terraform → AWS EC2 → Ansible → CloudWatch → Troubleshooting → Git/GitHub
-
-The application was successfully deployed to AWS, returned an HTTP 200 response, was monitored through CloudWatch, documented in GitHub, and ultimately destroyed using Terraform to prevent unnecessary cloud costs.
+* A working logistics-focused web application
+* Standardized operational data
+* Containerized deployment
+* Repeatable AWS infrastructure
+* Automated server configuration
+* Idempotent deployment
+* Dedicated health monitoring
+* Infrastructure observability
+* Automated incident and recovery notifications
+* Secure remote administration
+* Systematic troubleshooting
+* Version-controlled technical documentation
 
 ## Skills Demonstrated
 
-- Amazon Web Services
-- Amazon EC2
-- Amazon CloudWatch
-- Terraform
-- Infrastructure as Code
-- Ansible
-- Docker
-- Python
-- Flask
-- JSON
-- Linux
-- SSH
-- Cloud networking
-- Security groups
-- Git
-- GitHub
-- Monitoring and observability
-- Technical documentation
-- Systematic troubleshooting
+* Amazon Web Services
+* Amazon EC2
+* Amazon CloudWatch
+* Amazon SNS
+* Terraform
+* Infrastructure as Code
+* Ansible
+* Docker
+* Gunicorn
+* Python
+* Flask
+* JSON
+* Linux
+* SSH
+* Cloud networking
+* Security groups
+* Monitoring and observability
+* Git and GitHub
+* Troubleshooting
+* Technical documentation
+* Cost-aware resource management
+
+## Portfolio Status
+
+The application and operational tooling have been successfully deployed and verified. The temporary AWS environment remains active only while final portfolio evidence is collected.
+
+After documentation is complete, Terraform will destroy the managed resources to prevent unnecessary cloud charges. Cleanup will be verified by confirming that the Terraform state contains no remaining resources.
