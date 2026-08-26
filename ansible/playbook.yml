@@ -7,6 +7,7 @@
     - name: Update apt package cache
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: 3600
 
     - name: Install Docker
       ansible.builtin.apt:
@@ -24,3 +25,98 @@
         name: ubuntu
         groups: docker
         append: true
+    - name: Create CloudFleet application directory
+      ansible.builtin.file:
+        path: /opt/cloudfleet
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    - name: Copy Dockerfile
+      ansible.builtin.copy:
+        src: ../Dockerfile
+        dest: /opt/cloudfleet/Dockerfile
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+      register: dockerfile_copy
+
+    - name: Copy application files
+      ansible.builtin.copy:
+        src: ../app/
+        dest: /opt/cloudfleet/app/
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+      register: app_copy
+
+    - name: Copy fleet data
+      ansible.builtin.copy:
+        src: ../data/
+        dest: /opt/cloudfleet/data/
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+      register: data_copy
+
+    - name: Check whether CloudFleet image exists
+      ansible.builtin.command:
+        cmd: docker image inspect cloudfleet:1.0
+      register: docker_image_check
+      changed_when: false
+      failed_when: false
+
+    - name: Build CloudFleet Docker image
+      ansible.builtin.command:
+        cmd: docker build -t cloudfleet:1.0 .
+        chdir: /opt/cloudfleet
+      register: docker_build
+      when:
+        - docker_image_check.rc != 0 or
+          dockerfile_copy.changed or
+          app_copy.changed or
+          data_copy.changed
+
+    - name: Check whether CloudFleet container exists
+      ansible.builtin.command:
+        cmd: docker container inspect cloudfleet
+      register: cloudfleet_container
+      changed_when: false
+      failed_when: false
+
+    - name: Check whether CloudFleet container is running
+      ansible.builtin.command:
+        cmd: docker ps --quiet --filter name=^/cloudfleet$ --filter status=running
+      register: cloudfleet_running
+      changed_when: false
+
+    - name: Remove outdated CloudFleet container
+      ansible.builtin.command:
+        cmd: docker rm -f cloudfleet
+      when:
+        - cloudfleet_container.rc == 0
+        - docker_build.changed
+
+    - name: Run CloudFleet container
+      ansible.builtin.command:
+        cmd: docker run -d --name cloudfleet --restart unless-stopped -p 5000:5000 cloudfleet:1.0
+      when:
+        - cloudfleet_container.rc != 0 or docker_build.changed
+
+    - name: Start existing CloudFleet container
+      ansible.builtin.command:
+        cmd: docker start cloudfleet
+      when:
+        - cloudfleet_container.rc == 0
+        - not docker_build.changed
+        - cloudfleet_running.stdout == ""
+
+    - name: Verify CloudFleet health
+      ansible.builtin.uri:
+        url: http://127.0.0.1:5000
+        status_code: 200
+      register: cloudfleet_health
+      retries: 5
+      delay: 3
+      until: cloudfleet_health.status == 200
