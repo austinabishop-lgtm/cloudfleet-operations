@@ -43,3 +43,92 @@ resource "aws_cloudwatch_metric_alarm" "status_check_failed" {
     Project = "CloudFleet"
   }
 }
+resource "aws_cloudwatch_dashboard" "cloudfleet" {
+  dashboard_name = "CloudFleet-Operations"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "CloudFleet EC2 CPU Utilization"
+          region = "us-east-1"
+          period = 300
+          stat   = "Average"
+
+          metrics = [
+            [
+              "AWS/EC2",
+              "CPUUtilization",
+              "InstanceId",
+              aws_instance.cloudfleet.id
+            ]
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "CloudFleet EC2 Status Checks"
+          region = "us-east-1"
+          period = 60
+          stat   = "Maximum"
+
+          metrics = [
+            [
+              "AWS/EC2",
+              "StatusCheckFailed",
+              "InstanceId",
+              aws_instance.cloudfleet.id
+            ]
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
+        width  = 24
+        height = 6
+
+        properties = {
+          title  = "CloudFleet Network Traffic"
+          region = "us-east-1"
+          period = 300
+          stat   = "Average"
+
+          metrics = [
+            [
+              "AWS/EC2",
+              "NetworkIn",
+              "InstanceId",
+              aws_instance.cloudfleet.id,
+              {
+                label = "Network In"
+              }
+            ],
+            [
+              "AWS/EC2",
+              "NetworkOut",
+              "InstanceId",
+              aws_instance.cloudfleet.id,
+              {
+                label = "Network Out"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  })
+}
