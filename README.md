@@ -253,6 +253,13 @@ Ansible performs the following operations:
 9. Starts or reuses the existing container
 10. Verifies the `/health` endpoint
 
+Create a local inventory from the sanitized template, then replace the placeholder values:
+
+```bash
+cp ansible/inventory.example.ini ansible/inventory.ini
+nano ansible/inventory.ini
+```
+
 Deployment command:
 
 ```bash
@@ -371,7 +378,7 @@ See [docs/troubleshooting.md](docs/troubleshooting.md) for the complete incident
 ```text
 cloudfleet-operations/
 ├── ansible/
-│   ├── inventory.ini
+│   ├── inventory.example.ini
 │   └── playbook.yml
 ├── app/
 │   ├── app.py
